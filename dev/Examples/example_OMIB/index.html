@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorial 1: OMIB · LITS.jl</title><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>LITS.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Tutorials</span><ul><li class="current"><a class="toctext" href>Tutorial 1: OMIB</a><ul class="internal"><li><a class="toctext" href="#Step-1:-Package-Initialization-1">Step 1: Package Initialization</a></li><li><a class="toctext" href="#Step-2:-Data-creation-1">Step 2: Data creation</a></li><li><a class="toctext" href="#Step-3:-Initializing-the-problem-1">Step 3: Initializing the problem</a></li><li><a class="toctext" href="#Step-4:-Build-the-Simulation-1">Step 4: Build the Simulation</a></li><li><a class="toctext" href="#Step-5:-Exploring-the-solution-1">Step 5: Exploring the solution</a></li></ul></li><li><a class="toctext" href="../example_lines/">Tutorial 2: Dynamic Lines</a></li></ul></li><li><span class="toctext">Models</span><ul><li><a class="toctext" href="../../Models/network/">Network</a></li><li><a class="toctext" href="../../Models/gens/">Generator</a></li><li><a class="toctext" href="../../Models/inverters/">Inverter</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Tutorials</li><li><a href>Tutorial 1: OMIB</a></li></ul><a class="edit-page" href="https://github.com/Energy-MAC/LITS.jl/blob/master/docs/src/Examples/example_OMIB.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Tutorial 1: OMIB</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Tutorial:-One-Machine-against-Infinite-Bus-(OMIB)-1" href="#Tutorial:-One-Machine-against-Infinite-Bus-(OMIB)-1">Tutorial: One Machine against Infinite Bus (OMIB)</a></h1><p>This tutorial will introduce you to the functionality of <code>LITS</code> for running Power System Simulations. Note that this tutorial is for <code>LITS 0.2.0</code>. Future versions will have dedicated functions to find an equilibrium point and a proper functions for running perturbations without coding directly the callbacks.</p><p>This tutorial presents a simulation of a two-bus system, with an infinite bus (represented as a voltage source behind an impedance) at bus 1 and a classic machine on bus 2. The perturbation will be the trip of one of the two circuits (doubling its resistance and impedance) of the line that connects both buses.</p><p>This tutorial can be found on <a href="https://github.com/Energy-MAC/LITS-Examples">LITS/Examples</a> repository.</p><h2><a class="nav-anchor" id="Step-1:-Package-Initialization-1" href="#Step-1:-Package-Initialization-1">Step 1: Package Initialization</a></h2><p>The first step consists in initialize all packages that will be used to run the simulation. All the necessary packages are listed:</p><pre><code class="language-julia">using LITS
+using PowerSystems
+using NLsolve
+using DiffEqBase
+using Sundials
+const PSY = PowerSystems</code></pre><p><code>LITS</code> and <code>PowerSystems</code> are used to properly define the data structure, while <code>NLsolve</code>, <code>DiffEqBase</code> and <code>Sundials</code> are used to formulate and solve the problem. Finally we call use can call <code>PowerSystems</code> functions using the <code>PSY</code> abbreviation.</p><h2><a class="nav-anchor" id="Step-2:-Data-creation-1" href="#Step-2:-Data-creation-1">Step 2: Data creation</a></h2><p>Next we need to define the different elements required to run a simulation. To run a simulation, it is required to define a <code>DynamicSystem</code> that requires the following components:</p><ul><li>Vector of <code>PSY.Bus</code> elements, that define all the buses in the network.</li><li>Vector of <code>PSY.Branch</code> elements, that define all the branches elements (that connect two buses) in the network.</li><li>Vector of <code>DynInjection</code> elements, that define all the devices connected to buses that can inject (or withdraw) current, while also defining differential equations to model its dynamics.</li><li>Vector of <code>PSY.Injection</code> elements, that define all the devices connected to buses that can inject (or withdraw) current, without defining any differential equation.</li><li>The base of power used to define per unit values, in MVA as a <code>Float64</code> value.</li><li>The base frequency used in the system, in Hz as a <code>Float64</code> value.</li><li>(Optional) Vector of <code>DynBranch</code> elements, that can be used to model lines with differential equations.</li></ul><p>To start we will define the data structures for the network.</p><h3><a class="nav-anchor" id="Buses-and-Branches-1" href="#Buses-and-Branches-1">Buses and Branches</a></h3><p>As mentioned earlier, we require to create a <code>Vector</code> of <code>PSY.Bus</code> to define the buses in the network. Currently, some of the parameters are not used in <code>LITS</code>, but will be used once the initialization procedure is implemented.</p><pre><code class="language-julia">#Define the vector of buses
+nodes_case1 = [PSY.Bus(1 , #number
+                   &quot;Bus 1&quot;, #Name
+                   &quot;REF&quot; , #BusType (REF, PV, PQ)
+                   0, #Angle in radians
+                   1.05, #Voltage in pu
+                   (min=0.94, max=1.06), #Voltage limits in pu
+                   69), #Base voltage in kV
+                   PSY.Bus(2 , &quot;Bus 2&quot;  , &quot;PV&quot; , 0 , 1.0 , (min=0.94, max=1.06), 69)];</code></pre><p>Note that two buses are defined in the vector <code>nodes_case1</code>. Similarly, to define the branches (that also has some parameters that are currently not used):</p><pre><code class="language-julia">#Define the vector of branches
+branch_case1 = [PSY.Line(&quot;Line1&quot;, #name
+                     true, #available
+                     0.0, #active power flow initial condition (from-to)
+                     0.0, #reactive power flow initial condition (from-to)
+                     Arc(from=nodes_case1[1], to=nodes_case1[2]), #Connection between buses
+                     0.01, #resistance in pu
+                     0.05, #reactance in pu
+                     (from=0.0, to=0.0), #susceptance in pu
+                     18.046, #rate in MW
+                     1.04)];  #angle limits (-min and max)</code></pre><p>Since we are interested in creating a fault that trips one of the two circuits of the line, we will create an additional <code>Vector</code> of branches with doubled impedance:</p><pre><code class="language-julia">#Define the vector of branches under the fault
+branch_case1_fault = [PSY.Line(&quot;Line1&quot;, #name
+                           true, #available
+                           0.0, #active power flow initial condition (from-to)
+                           0.0, #reactive power flow initial condition (from-to)
+                           Arc(from=nodes_case1[1], to=nodes_case1[2]), #Connection between buses
+                           0.02, #resistance in pu
+                           0.1, #reactance in pu
+                           (from=0.0, to=0.0), #susceptance in pu
+                           18.046, #rate in MW
+                           1.04)];  #angle limits (-min and max)</code></pre><p>Note that the resistance and reactance is doubled in comparison to the system without fault.</p><h3><a class="nav-anchor" id="Injection-devices-1" href="#Injection-devices-1">Injection devices</a></h3><p>Secondly, we will define devices that can inject/withdraw electric current directly without defining differential equations. In this case we include a load and the voltage source that model the infinite bus.</p><pre><code class="language-julia">loads_case1 = [PowerLoad(&quot;Bus1&quot;, #name
+                         true, #available
+                         nodes_case1[2], #bus location
+                         PowerSystems.ConstantPower, #type
+                         0.3, #Active Power pu
+                         0.01, #Reactive power pu
+                         0.3, #Max Active Power pu
+                         0.01)]; #Max Reactive Power pu
+
+inf_gen_case1 = StaticSource(1, #number
+                :InfBus, #name
+                nodes_case1[1], #bus
+                1.05, #VR real part of voltage source
+                0.0, #VI imaginary part of voltage source
+                0.000001); #Xth</code></pre><p>Note that loads are assumed as constant power for power flow purposes, but for dynamic simulations are converted to impedance loads assuming nominal voltage equals to 1 pu.</p><h3><a class="nav-anchor" id="Dynamic-Injection-devices-1" href="#Dynamic-Injection-devices-1">Dynamic Injection devices</a></h3><p>Third, we define the <code>Vector</code> of <code>DynInjection</code> elements. In this case, we require to define a generator located in bus 2. For that purpose, we need to define its machine, shaft, automatic voltage regulator (AVR), turbine governor (TG) and power system stabilizer (PSS):</p><pre><code class="language-julia">### Machine ###
+case1_machine = BaseMachine(0.0, #R
+                            0.2995, #Xd_p
+                            0.7087, #eq_p
+                            100.0)  #MVABase
+
+######## Shaft Data #########
+
+### Shaft for Case 1 ###
+case1_shaft = SingleMass(3.148, #H
+                     2.0) #D
+
+########  AVR Data #########
+case1_avr = AVRFixed(0.0) #Vf not applicable in Classic Machines
+
+######## TG Data #########
+### No TG ###
+case1234_no_tg = TGFixed(1.0) #eff
+
+######## PSS Data #########
+### No PSS ###
+cases_no_pss = PSSFixed(0.0) #No PSS without AVR
+
+### Constructing the Generator ###
+case1_gen = DynGenerator(1, #Number
+                      :Case1Gen,
+                      nodes_case1[2], #bus
+                      1.0, # ω_ref,
+                      1.0, #V_ref (only used in AVR)
+                      0.5, #P_ref
+                      case1_machine, #machine
+                      case1_shaft, #shaft
+                      case1_avr, #avr
+                      case1234_no_tg, #tg
+                      cases_no_pss) #pss</code></pre><p>Note that a generator is defined by its 5 components, while also defining its reference for frequency, voltage and power.</p><h3><a class="nav-anchor" id="Defining-the-Dynamic-System-1" href="#Defining-the-Dynamic-System-1">Defining the Dynamic System</a></h3><p>Finally, with all the components properly constructed we define the dynamic system:</p><pre><code class="language-julia">case1_DynSystem = DynamicSystem(nodes_case1, #Vector of Buses
+                              branch_case1, #Vector of Branches
+                              [case1_gen], #Vector of Dynamic Injections
+                              vcat(inf_gen_case1,loads_case1), #Vector of Injections
+                              100.0, #MVA Base
+                              60.0) #Freq. Base</code></pre><h2><a class="nav-anchor" id="Step-3:-Initializing-the-problem-1" href="#Step-3:-Initializing-the-problem-1">Step 3: Initializing the problem</a></h2><p>The next step consists in finding an initial condition for the states. But first, we will explore some of the characteristics of our Dynamic System. All information (a ton) can be observed using <code>dump(case1_DynSystem)</code>. The following methods can be used to return some information:</p><ul><li><code>case1_DynSystem.buses</code>: Return the vector of buses of the dynamic system.</li><li><code>case1_DynSystem.branches</code>: Return the vector of branches of the dynamic system.</li><li><code>case1_DynSystem.dyn_injections</code>: Return the vector of dynamic injections of the dynamic system.</li><li><code>case1_DynSystem.injections</code>: Return the vector of dynamic injections of the dynamic system.</li><li><code>case1_DynSystem.DAE_vector</code>: Return the vector of booleans of the dynamic system. Returns <code>false</code> or 0 for states that are algebraic and <code>true</code> or 1 for states that have derivative defined (differential states). The arrangement will put first the real part of the voltage buses and next the imaginary part. After that the differential states are defined.</li><li><code>case1_DynSystem.global_state_index</code>: Return an array of dictionaries that have the order of the states in the entire vector state.</li></ul><p>To initialize the problem we need to define an initial guess of the states:</p><pre><code class="language-julia">#Initialize variables
+dx0 = zeros(LITS.get_total_rows(case1_DynSystem)) #Define a vector of zeros for the derivative
+x0 = [1.05, #VR_1
+      1.0, #VR_2
+      0.0, #VI_1
+      0.01, #VI_2
+      0.2, #δ
+      1.0] #ω
+tspan = (0.0, 30.0);</code></pre><p>We will use <code>NLsolve</code> to find the initial condition of the system:</p><pre><code class="language-julia">inif! = (out,x) -&gt; LITS.system_model!(out, #output of the function
+                                      dx0, #derivatives equal to zero
+                                      x, #states
+                                       ([0.0],case1_DynSystem), #Parameters: [0.0] is not used
+                                        0.0) #time equals to zero.
+sys_solve = nlsolve(inif!, x0) #Solve using initial guess x0
+x0_init = sys_solve.zero</code></pre><h2><a class="nav-anchor" id="Step-4:-Build-the-Simulation-1" href="#Step-4:-Build-the-Simulation-1">Step 4: Build the Simulation</a></h2><p>Next we will construct the simulation that we are interested to run. But first, we define the pertubation we are interested in model. <code>LITS</code> have two perturbations already implemented, that are a change in the mechanical power <code>P_ref</code> and a change on the admittance matrix <code>Y_bus</code> of the system. In this case we define a change in the admittance matrix:</p><pre><code class="language-julia">#Compute Y_bus after fault
+Ybus_fault = PSY.Ybus(branch_case1_fault, nodes_case1)[:,:] #Obtain Ybus for fault system
+
+#Define Fault using Callbacks
+cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, #Change occurs at t=1
+                                 LITS.Y_change!) #Callback will change the Y_bus.</code></pre><p>Now we define the simulation structure:</p><pre><code class="language-julia">#Define Simulation Problem
+sim = DynamicSimulation(case1_DynSystem, #Dynamic System
+                        tspan, #Time span to simulate
+                        Ybus_fault, #Parameter that will be changed in the fault
+                        cb, #Callback
+                        x0_init) #Initial condition</code></pre><p>Finally, to run the simulation:</p><pre><code class="language-julia">#Solve problem in equilibrium
+run_simulation!(sim, #simulation structure
+                IDA(), #Sundials DAE Solver
+                dtmax=0.02); #Arguments: Maximum timestep allowed</code></pre><h2><a class="nav-anchor" id="Step-5:-Exploring-the-solution-1" href="#Step-5:-Exploring-the-solution-1">Step 5: Exploring the solution</a></h2><p>After running the simulation, our simulation structure <code>sim</code> will have the solution. For that <code>sim.solution</code> can be used to explore the solution structure. In this case <code>sim.solution.t</code> returns the vector of time, while <code>sim.solution.u</code> return the array of states. In addition, <code>LITS</code> have two functions to obtain different states of the solution:</p><ul><li><code>get_state_series(sim, (:Case1Gen, :δ))</code>: can be used to obtain the solution as a tuple of time and the required state. In this case, we are obtaining the rotor angle <code>:δ</code> of the generator named <code>:Case1Gen</code>.</li><li><code>get_voltagemag_series(sim, 2)</code>: can be used to obtain the voltage magnitude as a tuple of time and voltage. In this case, we are obtaining the voltage magnitude at bus 2 (where the generator is located).</li></ul><pre><code class="language-julia">using Plots
+angle = get_state_series(sim, (:Case1Gen, :δ))
+plot(angle, xlabel=&quot;time&quot;, ylabel=&quot;rotor angle [rad]&quot;, label=&quot;rotor angle&quot;)
+
+volt = get_voltagemag_series(sim, 2)
+plot(volt, xlabel=&quot;time&quot;, ylabel=&quot;Voltage [pu]&quot;, label=&quot;V_2&quot;)</code></pre><img src="../../assets/rotor_angle_OMIB.png" width="75%"/><p>⠀</p><img src="../../assets/voltage_OMIB.png" width="75%"/><p>⠀</p><footer><hr/><a class="previous" href="../../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../example_lines/"><span class="direction">Next</span><span class="title">Tutorial 2: Dynamic Lines</span></a></footer></article></body></html>
