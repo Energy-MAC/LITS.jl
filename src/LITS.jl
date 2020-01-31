@@ -13,6 +13,7 @@ export get_voltagemag_series
 export print_init_states
 ####################################### Package Imports ####################################
 import DiffEqBase
+import ForwardDiff
 import SparseArrays: SparseMatrixCSC
 import LinearAlgebra: BLAS
 import Base.to_index
