@@ -299,8 +299,8 @@ ext[&quot;global_index&quot;] #Showcase the global indexing of z</code></pre><p>
     0.0, #V1_I
     -0.01, #V2_I
     -0.01, #V3_I
-    0.0, #δω_vsm
-    0.2, #δθ_vsm
+    0.0, #ω_oc
+    0.2, #θ_oc
     0.025, #qm
     0.0015, #ξ_d
     -0.07, #ξ_q
@@ -311,13 +311,13 @@ ext[&quot;global_index&quot;] #Showcase the global indexing of z</code></pre><p>
     1.004, #vpll_d
     0.0, #vpll_q
     0.0, #ε_pll
-    0.1, #δθ_pll
+    0.1, #θ_pll
     0.5, #id_cv
     0.0, #iq_cv
-    0.95, #vod
-    -0.1, #voq
-    0.49, #iod
-    -0.1, #ioq
+    0.95, #Vd_filter
+    -0.1, #Vq_filter
+    0.49, #Id_filter
+    -0.1, #Iq_filter
     1.0, #eq_p
     0.47, #ed_p
     0.6, #δ
@@ -341,4 +341,4 @@ volt = get_voltagemag_series(sim, 2)
 plot(volt, xlabel=&quot;time&quot;, ylabel=&quot;Voltage [pu]&quot;, label=&quot;V_2&quot;)
 
 zoom = [(volt[1][ix], volt[2][ix]) for (ix, s) in enumerate(volt[1]) if (s &gt; 0.90 &amp;&amp; s &lt; 1.6)]
-plot(zoom, xlabel=&quot;time&quot;, ylabel=&quot;Voltage [pu]&quot;, label=&quot;V_2&quot;)</code></pre><img src="../../assets/voltage_lines.png" width="75%"/><p>⠀</p><img src="../../assets/voltage_zoom_lines.png" width="75%"/><p>⠀</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example_OMIB/">« Tutorial 1: OMIB</a><a class="docs-footer-nextpage" href="../../Models/network/">Network »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 8 April 2020 03:43">Wednesday 8 April 2020</span>. Using Julia version 1.3.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot(zoom, xlabel=&quot;time&quot;, ylabel=&quot;Voltage [pu]&quot;, label=&quot;V_2&quot;)</code></pre><img src="../../assets/voltage_lines.png" width="75%"/><p>⠀</p><img src="../../assets/voltage_zoom_lines.png" width="75%"/><p>⠀</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example_OMIB/">« Tutorial 1: OMIB</a><a class="docs-footer-nextpage" href="../../Models/network/">Network »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 13 April 2020 22:08">Monday 13 April 2020</span>. Using Julia version 1.3.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
