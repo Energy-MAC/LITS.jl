@@ -70,6 +70,18 @@ end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
 
+@enum dq_ref begin
+    d = 1
+    q = 2
+end
+@enum RI_ref begin
+    R = 1
+    I = 2
+end
+
+Base.to_index(ix::dq_ref) = Int(ix)
+Base.to_index(ix::RI_ref) = Int(ix)
+
 const V_ref_index = 1
 const ω_ref_index = 2
 const P_ref_index = 3

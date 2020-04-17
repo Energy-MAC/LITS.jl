@@ -230,7 +230,7 @@ branches_DArco_IB(nodes_DArco_IB) = [PSY.Line(
     0.0, #reactive power flow initial condition (from-to)
     Arc(from = nodes_DArco_IB[1], to = nodes_DArco_IB[2]), #Connection between buses
     0.0, #resistance in pu
-    0.075, #reactance in pu
+    0.0075, #reactance in pu
     (from = 0.0, to = 0.0), #susceptance in pu
     5.0, #rate in MW
     1.04,

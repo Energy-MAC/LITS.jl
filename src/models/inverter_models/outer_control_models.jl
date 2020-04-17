@@ -24,7 +24,7 @@ function mdl_outer_ode!(
         device,
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
-    vpll_d = device_states[external_ix[1]]
+        vpll_d = device_states[external_ix[1]]
     vpll_q = device_states[external_ix[2]]
     ϵ_pll = device_states[external_ix[3]]
     Vd_filter = device_states[external_ix[4]] #TODO: Should be inner reference after initialization
@@ -34,6 +34,8 @@ function mdl_outer_ode!(
 
     #Obtain inner variables for component
     ω_pll = get_inner_vars(device)[ω_freq_estimator_var]
+    V_tR = get_inner_vars(device)[VR_inv_var]
+    V_tI = get_inner_vars(device)[VI_inv_var]
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(device)
@@ -70,24 +72,23 @@ function mdl_outer_ode!(
     qm = internal_states[3]
 
     #Obtain additional expressions
+    #I_dq = dq_ri(θ_oc + pi / 2) * [Id_filter; Iq_filter]
+    #_p_elec_out = Id_filter * V_dq_oc[d] + (Iq_filter  * V_dq_oc[q])
+    #_q_elec_out = (Id_filter * V_dq_oc[q]) - Iq_filter * V_dq_oc[d]
+    #__p_elec_out = I_dq[1] * V_tR + I_dq[2] * V_tI
+    #__q_elec_out = - I_dq[2] * V_tR + I_dq[1] * V_tI
+
     p_elec_out = Id_filter * Vd_filter + Iq_filter * Vq_filter
+    q_elec_out = (-1* Iq_filter * Vd_filter) + (Id_filter * Vq_filter)
 
     #Compute 3 states ODEs
     output_ode[local_ix[1]] =
         (p_ref / Ta - p_elec_out / Ta - kd * (ω_oc - ω_pll) / Ta - kω * (ω_oc - ω_ref) / Ta)
     output_ode[local_ix[2]] = ωb * (ω_oc - ω_sys)
-    output_ode[local_ix[3]] =
-        (-ωf * Iq_filter * Vd_filter + ωf * Id_filter * Vq_filter - ωf * qm)
+    output_ode[local_ix[3]] = ωf * (q_elec_out - qm)
 
     #Update inner vars
     get_inner_vars(device)[θ_oc_var] = θ_oc
     get_inner_vars(device)[ω_oc_var] = ω_oc
     get_inner_vars(device)[V_oc_var] = V_ref + kq * (q_ref - qm)
 end
-#output_ode[local_ix[1]] = (
-#    -Id_filter * Vd_filter / Ta - Iq_filter * Vq_filter / Ta +
-#    kd * kp_pll * atan(vpll_q / vpll_d) / Ta +
-#    kd * ki_pll * ϵ_pll / Ta - (kd + kω) * (ω_oc - ω_sys) / Ta +
-#    p_ref / Ta +
-#    kω * ω_ref / Ta - kω * ω_sys / Ta
-#)

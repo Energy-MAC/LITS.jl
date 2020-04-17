@@ -631,7 +631,7 @@ end
 
 function system_DAIB(nodes, branches, sources, invs)
     #Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
-    sys = PSY.System(100.0, frequency = 50.0)
+    sys = PSY.System(2.75, frequency = 50.0)
 
     #Add buses
     for bus in nodes
