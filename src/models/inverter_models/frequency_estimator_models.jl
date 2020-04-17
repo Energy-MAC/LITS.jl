@@ -44,7 +44,7 @@ function mdl_freq_estimator_ode!(
 
     #Inputs (control signals)
     #V_dq_T = ri_dq(θ_pll + pi / 2) * [V_tR; V_tI]
-    V_filter_pll = ri_dq(θ_pll - θ_oc + pi / 2) * [Vd_filter ; Vq_filter]
+    V_filter_pll = ri_dq(θ_pll - θ_oc + pi / 2) * [Vd_filter; Vq_filter]
 
     #Compute 6 states ODEs (D'Arco EPSR122 Model)
     #Output Voltage LPF (internal state)

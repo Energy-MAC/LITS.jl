@@ -24,7 +24,7 @@ function mdl_outer_ode!(
         device,
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
-        vpll_d = device_states[external_ix[1]]
+    vpll_d = device_states[external_ix[1]]
     vpll_q = device_states[external_ix[2]]
     ϵ_pll = device_states[external_ix[3]]
     Vd_filter = device_states[external_ix[4]] #TODO: Should be inner reference after initialization
@@ -79,7 +79,7 @@ function mdl_outer_ode!(
     #__q_elec_out = - I_dq[2] * V_tR + I_dq[1] * V_tI
 
     p_elec_out = Id_filter * Vd_filter + Iq_filter * Vq_filter
-    q_elec_out = (-1* Iq_filter * Vd_filter) + (Id_filter * Vq_filter)
+    q_elec_out = (-1 * Iq_filter * Vd_filter) + (Id_filter * Vq_filter)
 
     #Compute 3 states ODEs
     output_ode[local_ix[1]] =
