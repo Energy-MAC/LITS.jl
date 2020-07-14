@@ -1,181 +1,39 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorial 1: OMIB · LITS.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">LITS.jl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Tutorials</span><ul><li class="is-active"><a class="tocitem" href>Tutorial 1: OMIB</a><ul class="internal"><li><a class="tocitem" href="#Step-1:-Package-Initialization-1"><span>Step 1: Package Initialization</span></a></li><li><a class="tocitem" href="#Step-2:-Data-creation-1"><span>Step 2: Data creation</span></a></li><li><a class="tocitem" href="#Step-3:-Build-the-simulation-and-initializing-the-problem-1"><span>Step 3: Build the simulation and initializing the problem</span></a></li><li><a class="tocitem" href="#Step-4:-Run-the-Simulation-1"><span>Step 4: Run the Simulation</span></a></li><li><a class="tocitem" href="#Step-5:-Exploring-the-solution-1"><span>Step 5: Exploring the solution</span></a></li><li><a class="tocitem" href="#Optional:-Small-Signal-Analysis-1"><span>Optional: Small Signal Analysis</span></a></li></ul></li><li><a class="tocitem" href="../example_lines/">Tutorial 2: Dynamic Lines</a></li></ul></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../Models/network/">Network</a></li><li><a class="tocitem" href="../../Models/gens/">Generator</a></li><li><a class="tocitem" href="../../Models/inverters/">Inverter</a></li><li><a class="tocitem" href="../../Models/small/">Small Signal</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Tutorial 1: OMIB</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tutorial 1: OMIB</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Energy-MAC/LITS.jl/blob/master/docs/src/Examples/example_OMIB.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Tutorial:-One-Machine-against-Infinite-Bus-(OMIB)-1"><a class="docs-heading-anchor" href="#Tutorial:-One-Machine-against-Infinite-Bus-(OMIB)-1">Tutorial: One Machine against Infinite Bus (OMIB)</a><a class="docs-heading-anchor-permalink" href="#Tutorial:-One-Machine-against-Infinite-Bus-(OMIB)-1" title="Permalink"></a></h1><p>This tutorial will introduce you to the functionality of <code>LITS</code> for running Power System Simulations. Note that this tutorial is for <code>LITS 0.3.0</code>. Future versions will have dedicated functions to find an equilibrium point using a Power Flow method without relying in a guess of the initial condition to run a non-linear solver.</p><p>This tutorial presents a simulation of a two-bus system, with an infinite bus (represented as a voltage source behind an impedance) at bus 1 and a classic machine on bus 2. The perturbation will be the trip of one of the two circuits (doubling its resistance and impedance) of the line that connects both buses.</p><p>This tutorial can be found on <a href="https://github.com/Energy-MAC/LITS-Examples">LITS/Examples</a> repository.</p><h2 id="Step-1:-Package-Initialization-1"><a class="docs-heading-anchor" href="#Step-1:-Package-Initialization-1">Step 1: Package Initialization</a><a class="docs-heading-anchor-permalink" href="#Step-1:-Package-Initialization-1" title="Permalink"></a></h2><p>The first step consists in initialize all packages that will be used to run the simulation. All the necessary packages are listed:</p><pre><code class="language-julia">using LITS
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Tutorial 1: OMIB · LITS.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">LITS.jl</span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../example_data/">Tutorial 0: Data Creation</a></li><li class="is-active"><a class="tocitem" href>Tutorial 1: OMIB</a><ul class="internal"><li><a class="tocitem" href="#Step-1:-Package-Initialization-1"><span>Step 1: Package Initialization</span></a></li><li><a class="tocitem" href="#Step-2:-Load-the-system-1"><span>Step 2: Load the system</span></a></li><li><a class="tocitem" href="#Step-3:-Build-the-simulation-and-initializing-the-problem-1"><span>Step 3: Build the simulation and initializing the problem</span></a></li><li><a class="tocitem" href="#Step-4:-Run-the-Simulation-1"><span>Step 4: Run the Simulation</span></a></li><li><a class="tocitem" href="#Step-5:-Exploring-the-solution-1"><span>Step 5: Exploring the solution</span></a></li><li><a class="tocitem" href="#Optional:-Small-Signal-Analysis-1"><span>Optional: Small Signal Analysis</span></a></li></ul></li><li><a class="tocitem" href="../example_lines/">Tutorial 2: Dynamic Lines</a></li></ul></li><li><span class="tocitem">Models</span><ul><li><a class="tocitem" href="../../Models/network/">Network</a></li><li><a class="tocitem" href="../../Models/srf/">Reference Frames</a></li><li><a class="tocitem" href="../../Models/gens/">Generator</a></li><li><a class="tocitem" href="../../Models/inverters/">Inverter</a></li><li><a class="tocitem" href="../../Models/small/">Small Signal</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Tutorial 1: OMIB</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Tutorial 1: OMIB</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/Energy-MAC/LITS.jl/blob/master/docs/src/Examples/example_OMIB.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Tutorial:-One-Machine-against-Infinite-Bus-(OMIB)-1"><a class="docs-heading-anchor" href="#Tutorial:-One-Machine-against-Infinite-Bus-(OMIB)-1">Tutorial: One Machine against Infinite Bus (OMIB)</a><a class="docs-heading-anchor-permalink" href="#Tutorial:-One-Machine-against-Infinite-Bus-(OMIB)-1" title="Permalink"></a></h1><p>This tutorial will introduce you to the functionality of <code>LITS</code> for running Power System Simulations. Note that this tutorial is for <code>LITS 0.4.0</code>. Current version already have a dedicated function to find an equilibrium point using a Power Flow method without relying in a guess of the initial condition.</p><p>This tutorial presents a simulation of a two-bus system, with an infinite bus (represented as a voltage source behind an impedance) at bus 1 and a classic machine on bus 2. The perturbation will be the trip of one of the two circuits (doubling its resistance and impedance) of the line that connects both buses.</p><p>This tutorial can be found on <a href="https://github.com/Energy-MAC/LITS-Examples">LITS/Examples</a> repository.</p><h2 id="Step-1:-Package-Initialization-1"><a class="docs-heading-anchor" href="#Step-1:-Package-Initialization-1">Step 1: Package Initialization</a><a class="docs-heading-anchor-permalink" href="#Step-1:-Package-Initialization-1" title="Permalink"></a></h2><p>The first step consists in initialize all packages that will be used to run the simulation. All the necessary packages are listed:</p><pre><code class="language-julia">using LITS
 using PowerSystems
 using Sundials
-const PSY = PowerSystems</code></pre><p><code>PowerSystems</code> is used to properly define the data structure, while <code>Sundials</code> is used to fsolve the problem defined in <code>LITS</code>. Finally we call use can call <code>PowerSystems</code> functions using the <code>PSY</code> abbreviation.</p><h2 id="Step-2:-Data-creation-1"><a class="docs-heading-anchor" href="#Step-2:-Data-creation-1">Step 2: Data creation</a><a class="docs-heading-anchor-permalink" href="#Step-2:-Data-creation-1" title="Permalink"></a></h2><p>Next we need to define the different elements required to run a simulation. To run a simulation, it is required to define a <code>PSY.System</code> that requires the following components:</p><ul><li>Vector of <code>PSY.Bus</code> elements, that define all the buses in the network.</li><li>Vector of <code>PSY.Branch</code> elements, that define all the branches elements (that connect two buses) in the network.</li><li>Vector of <code>PSY.DynamicInjection</code> elements, that define all the devices connected to buses that can inject (or withdraw) current, while also defining differential equations to model its dynamics. These include generators and inverters.</li><li>Vector of <code>PSY.PowerLoad</code> elements, that define all the loads connected to buses that can withdraw current, without defining any differential equation. Note that <code>LITS</code> will convert ConstantPower loads to RLC loads for transient simulations.</li><li>Vector of <code>PSY.Source</code> elements, that define source components behind a reactance that can inject or withdraw current, without defining any differential equation.</li><li>The base of power used to define per unit values, in MVA as a <code>Float64</code> value.</li><li>The base frequency used in the system, in Hz as a <code>Float64</code> value.</li><li>(Optional) Selecting which of the <code>PSY.Lines</code> (of the <code>PSY.Branch</code> vector) elements must be modeled of <code>DynamicLines</code> elements, that can be used to model lines with differential equations.</li></ul><p>To start we will define the data structures for the network.</p><h3 id="Buses-and-Branches-1"><a class="docs-heading-anchor" href="#Buses-and-Branches-1">Buses and Branches</a><a class="docs-heading-anchor-permalink" href="#Buses-and-Branches-1" title="Permalink"></a></h3><p>As mentioned earlier, we require to create a <code>Vector</code> of <code>PSY.Bus</code> to define the buses in the network. Currently, some of the parameters are not used in <code>LITS</code>, but will be used once the initialization procedure is implemented (such as voltage limits or the requested bus voltage).</p><pre><code class="language-julia">#Define the vector of buses
-nodes_OMIB = [
-    PSY.Bus(
-        1, #number
-        &quot;Bus 1&quot;, #Name
-        &quot;REF&quot;, #BusType (REF, PV, PQ)
-        0, #Angle in radians
-        1.05, #Voltage in pu
-        (min = 0.94, max = 1.06), #Voltage limits in pu
-        69, #Base voltage in kV
-    ),
-    PSY.Bus(2, &quot;Bus 2&quot;, &quot;PV&quot;, 0, 1.0, (min = 0.94, max = 1.06), 69),
-]</code></pre><p>Note that two buses are defined in the vector <code>nodes_case1</code>. It is important that the bus numbers are ordered from <span>$1$</span> to <span>$n$</span>, since that structure will be used to construct the vector of variables. Future versions of <code>LITS</code> will allow to relax this assumption. Similarly, to define the branches (that also has some parameters that are currently not used, such as the rate and angle limits):</p><pre><code class="language-julia">#Define the vector of branches
-branch_OMIB = [PSY.Line(
-    &quot;Line1&quot;, #name
-    true, #available
-    0.0, #active power flow initial condition (from-to)
-    0.0, #reactive power flow initial condition (from-to)
-    Arc(from = nodes_OMIB[1], to = nodes_OMIB[2]), #Connection between buses
-    0.01, #resistance in pu
-    0.05, #reactance in pu
-    (from = 0.0, to = 0.0), #susceptance in pu
-    18.046, #rate in MW
-    1.04, #angle limits (-min and max)
-)]</code></pre><p>Since we are interested in creating a fault that trips one of the two circuits of the line, we will create an additional <code>Vector</code> of branches with doubled impedance:</p><pre><code class="language-julia">#Define the vector of branches under the fault
-branch_OMIB_fault = [PSY.Line(
-    &quot;Line1&quot;, #name
-    true, #available
-    0.0, #active power flow initial condition (from-to)
-    0.0, #reactive power flow initial condition (from-to)
-    Arc(from = nodes_OMIB[1], to = nodes_OMIB[2]), #Connection between buses
-    0.02, #resistance in pu
-    0.1, #reactance in pu
-    (from = 0.0, to = 0.0), #susceptance in pu
-    18.046, #rate in MW
-    1.04, #angle limits (-min and max)
-)]</code></pre><p>Note that the resistance and reactance is doubled in comparison to the system without fault.</p><h3 id="Injection-devices-1"><a class="docs-heading-anchor" href="#Injection-devices-1">Injection devices</a><a class="docs-heading-anchor-permalink" href="#Injection-devices-1" title="Permalink"></a></h3><p>Secondly, we will define devices that can inject/withdraw electric current directly without defining differential equations. In this case we include a load and the voltage source that model the infinite bus.</p><pre><code class="language-julia">loads_OMIB = [PSY.PowerLoad(
-    &quot;LBus1&quot;, #name
-    true, #availability
-    nodes_OMIB[2], #bus
-    PSY.LoadModels.ConstantPower, #type
-    0.3, #P
-    0.01, #Q
-    0.3, #P_max
-    0.01, #Q_max
-)]
-
-inf_gen_OMIB = [PSY.Source(
-    &quot;InfBus&quot;, #name
-    true, #availability
-    nodes_OMIB[1], #bus
-    1.05, #VR
-    0.0, #VI
-    0.000005, #Xth
-)]</code></pre><p>Note that loads are assumed as constant power for power flow purposes, but for dynamic simulations are converted to impedance loads assuming nominal voltage equals to 1 pu.</p><h3 id="Dynamic-Injection-devices-1"><a class="docs-heading-anchor" href="#Dynamic-Injection-devices-1">Dynamic Injection devices</a><a class="docs-heading-anchor-permalink" href="#Dynamic-Injection-devices-1" title="Permalink"></a></h3><p>Third, we define the <code>Vector</code> of <code>PSY.DynamicInjection</code> elements. In this case, we require to define a generator located in bus 2. For that purpose, we need to define its machine, shaft, automatic voltage regulator (AVR), turbine governor (TG) and power system stabilizer (PSS):</p><pre><code class="language-julia">### Machine ###
-machine_OMIB = PSY.BaseMachine(
-    0.0, #R
-    0.2995, #Xd_p
-    0.7087, #eq_p
-    100.0,
-)  #MVABase
-
-######## Shaft Data #########
-
-### Shaft for Case 1 ###
-shaft_OMIB = PSY.SingleMass(
-    3.148, #H
-    2.0, #D
-)
-
-########  AVR Data #########
-avr_OMIB = AVRFixed(0.0) #Vf not applicable in Classic Machines
-
-######## TG Data #########
-### No TG ###
-tg_OMIB = TGFixed(1.0) #No TG: Efficiency = 1.0
-
-######## PSS Data #########
-### No PSS ###
-pss_OMIB = PSSFixed(0.0) #No PSS without AVR
-
-### Constructing the Generator ###
-gen_OMIB = PSY.DynamicGenerator(
-    1, #Number
-    &quot;OMIB_Gen&quot;, #name
-    nodes_OMIB[2], #bus
-    1.0, #ω_ref
-    1.0, #V_ref
-    0.5, #P_ref
-    0.0, #Q_ref: Not used for standard machines (only for PQ gens)
-    machine_OMIB, #machine
-    shaft_OMIB, #shaft
-    avr_OMIB, #avr
-    tg_OMIB, #tg
-    pss_OMIB, #pss
-)</code></pre><p>Note that a generator is defined by its 5 components, while also defining its reference for frequency, voltage and power. The reactive power reference must be defined but is not used for standard machines, since is only used for PQ generators, that will be implemented in future versions of <code>LITS</code>.</p><h3 id="Defining-the-Dynamic-System-1"><a class="docs-heading-anchor" href="#Defining-the-Dynamic-System-1">Defining the Dynamic System</a><a class="docs-heading-anchor-permalink" href="#Defining-the-Dynamic-System-1" title="Permalink"></a></h3><p>Finally, with all the components properly constructed we define the dynamic system:</p><pre><code class="language-julia">#Create the system
-sys = PSY.System(
-      100.0, #Base MVA
-      frequency = 60.0, #Nominal frequency in Hz
-)
-
-#Add the buses to the system
-for bus in nodes_OMIB
-    PSY.add_component!(sys, bus)
-end
-
-#Add the branches to the system
-for br in branch_OMIB
-    PSY.add_component!(sys, br)
-end
-
-#Add the loads to the system
-for load in loads_OMIB
-    PSY.add_component!(sys, load)
-end
-
-#Add the sources (infinite gens) to the system
-for source in inf_gen_OMIB
-    PSY.add_component!(sys, source)
-end
-
-#Add the generator
-PSY.add_component!(sys, gen_OMIB)</code></pre><h2 id="Step-3:-Build-the-simulation-and-initializing-the-problem-1"><a class="docs-heading-anchor" href="#Step-3:-Build-the-simulation-and-initializing-the-problem-1">Step 3: Build the simulation and initializing the problem</a><a class="docs-heading-anchor-permalink" href="#Step-3:-Build-the-simulation-and-initializing-the-problem-1" title="Permalink"></a></h2><p>The next step is to create the simulation structure. This will create the indexing of our system that will be used to formulate the differential-algebraic system of equations. To do so, it is required to specify the perturbation that will occur in the system. <code>LITS</code> support two types of perturbations:</p><ul><li>Three Phase Fault</li><li>Change in Reference Parameter</li></ul><p>In here, he will use a Three Phase Fault, that is modeled by modifying the admittance matrix of the system. To do so we create a ThreePhaseFault perturbation as follows:</p><pre><code class="language-julia">#Obtain the Ybus of the faulted system
-Ybus_fault = PSY.Ybus(
-    branch_OMIB_fault, #fault set of lines
-    nodes_OMIB, #set of buses
-)[:,:]
+const PSY = PowerSystems</code></pre><p><code>PowerSystems</code> is used to properly define the data structure, while <code>Sundials</code> is used to solve the problem defined in <code>LITS</code>. We used <code>PSY</code> to abbreviate the <code>PowerSystems.jl</code> package.</p><h2 id="Step-2:-Load-the-system-1"><a class="docs-heading-anchor" href="#Step-2:-Load-the-system-1">Step 2: Load the system</a><a class="docs-heading-anchor-permalink" href="#Step-2:-Load-the-system-1" title="Permalink"></a></h2><p>We will load the system using the JSON file created in Tutorial 0:</p><pre><code class="language-julia">omib_sys = System(&quot;omib_sys.json&quot;)</code></pre><h2 id="Step-3:-Build-the-simulation-and-initializing-the-problem-1"><a class="docs-heading-anchor" href="#Step-3:-Build-the-simulation-and-initializing-the-problem-1">Step 3: Build the simulation and initializing the problem</a><a class="docs-heading-anchor-permalink" href="#Step-3:-Build-the-simulation-and-initializing-the-problem-1" title="Permalink"></a></h2><p>The next step is to create the simulation structure. This will create the indexing of our system that will be used to formulate the differential-algebraic system of equations. To do so, it is required to specify the perturbation that will occur in the system. <code>LITS</code> support two types of perturbations:</p><ul><li>Three Phase Fault</li><li>Change in Reference Parameter</li></ul><p>In here, he will use a Three Phase Fault, that is modeled by modifying the admittance matrix of the system. To do so we create a ThreePhaseFault perturbation as follows:</p><pre><code class="language-julia">#Compute the Y_bus after fault
+#Collect the branch of the system as:
+fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
+#Duplicates the impedance of the reactance
+fault_branch.x = fault_branch.x * 2
+#Obtain the new Ybus of the faulted system
+Ybus_fault = Ybus([fault_branch], get_components(Bus, omib_sys))[:, :]
 
 #Construct the perturbation
 perturbation_Ybus = ThreePhaseFault(
     1.0, #change will occur at t = 1.0s
     Ybus_fault, #new Ybus
-)</code></pre><p>With this, we are ready to create our simulation structure. We will skip solving for initial conditions to discuss about indexing. To construct our simulation we use:</p><pre><code class="language-julia">#Time span of our simulation
+)</code></pre><p>With this, we are ready to create our simulation structure. To construct our simulation we use:</p><pre><code class="language-julia">#Time span of our simulation
 tspan = (0.0, 30.0)
 
 #Define Simulation
 sim = Simulation(
+    pwd(),
     sys, #system
     tspan, #time span
     perturbation_Ybus, #Type of perturbation
-    initialize_simulation = false #keyword argument to not find initial conditions.
-)</code></pre><p>This will create the simulation structure that will be used to run the transient simulation and will modify the system to include the indexing. <code>LITS</code> will have the following structure for the vector of variables:</p><div>\[x = \left[\begin{array}{c} v_r \\ v_i \\ z \end{array}\right]\]</div><p>on which <span>$v_r$</span> is the vector of real voltages of all buses, <span>$v_i$</span> is the vector of imaginary voltages of all buses and <span>$z$</span> is the rest of states defined by the dynamic devices. Then, the length of the vector of variables will <span>$2n + \text{len}(z)$</span>, where <span>$n$</span> is the number of buses in the system. The indexing of the states can be found using:</p><pre><code class="language-julia">ext = PSY.get_ext(sim.system) #Obtain ext information of the system
-ext[&quot;global_index&quot;] #Showcase the global indexing of z</code></pre><p>In this system, <span>$\delta$</span> of the generator is state 5 and <span>$\omega$</span> is state 6 (since the first 4 states are the bus voltages). In addition, <code>ext[&quot;lits_counts&quot;]</code> has information on the total variables and total states (differential variables).</p><p>The next step consists in finding an initial condition for the states. In this case simply running</p><pre><code class="language-julia">#Define Simulation
-sim = Simulation(
-    sys, #system
-    tspan, #time span
-    perturbation_Ybus, #Type of perturbation
-)</code></pre><p>will correctly initialize the system. If no initial guess is provided, the system will use a flat start guess, assuming that all real voltages are equal to one, while imaginary voltages are equal to zero. Differential variables (states) will be guessed as zero too. The initial values can be obtained using <code>sim.x0_init</code>. However, for most systems if a bad initial guess is used, the non-linear solver may fail in correctly initializing the system. For such purposes, an initial guess can be provided to the simulation as follows:</p><pre><code class="language-julia">#Initial guess
-x0_guess = [
-    1.0, #VR_1
-    1.0, #VR_2
-    0.0, #VI_1
-    0.0, #VI_2
-    0.2, #δ
-    1.0, #ω
-]
-
-#Define Simulation
-sim = Simulation(
-    sys, #system
-    tspan, #time span
-    perturbation_Ybus, #Type of perturbation
-    initial_guess = x0_guess, #initial guess
-)
-
-#Check the initial condition
-sim.x0_init</code></pre><h2 id="Step-4:-Run-the-Simulation-1"><a class="docs-heading-anchor" href="#Step-4:-Run-the-Simulation-1">Step 4: Run the Simulation</a><a class="docs-heading-anchor-permalink" href="#Step-4:-Run-the-Simulation-1" title="Permalink"></a></h2><p>Finally, to run the simulation we simply use:</p><pre><code class="language-julia">#Solve problem
+)</code></pre><p>This will correctly initialize the system. It essentially will run a power flow and update <code>V_ref</code>, <code>P_ref</code> and hence <code>eq_p</code> (the internal voltage) to match the solution of the power flow. It will also initialize the states in the equilibrium. </p><pre><code class="language-julia">#Will print the initial states. It also give the symbols used to describe those states.
+print_device_states(sim)
+#Will export a dictionary with the initial condition values to explore
+x0_init = get_dict_init_states(sim)</code></pre><h2 id="Step-4:-Run-the-Simulation-1"><a class="docs-heading-anchor" href="#Step-4:-Run-the-Simulation-1">Step 4: Run the Simulation</a><a class="docs-heading-anchor-permalink" href="#Step-4:-Run-the-Simulation-1" title="Permalink"></a></h2><p>Finally, to run the simulation we simply use:</p><pre><code class="language-julia">#Solve problem
 run_simulation!(sim, #simulation structure
                 IDA(), #Sundials DAE Solver
-                dtmax=0.02); #Arguments: Maximum timestep allowed</code></pre><p>In some cases, the dynamic time step used for the simulation may fail. In such case, the keyword argument <code>dtmax</code> can be used to limit the maximum time step allowed for the simulation.</p><h2 id="Step-5:-Exploring-the-solution-1"><a class="docs-heading-anchor" href="#Step-5:-Exploring-the-solution-1">Step 5: Exploring the solution</a><a class="docs-heading-anchor-permalink" href="#Step-5:-Exploring-the-solution-1" title="Permalink"></a></h2><p>After running the simulation, our simulation structure <code>sim</code> will have the solution. For that <code>sim.solution</code> can be used to explore the solution structure. In this case <code>sim.solution.t</code> returns the vector of time, while <code>sim.solution.u</code> return the array of states. In addition, <code>LITS</code> have two functions to obtain different states of the solution:</p><ul><li><code>get_state_series(sim, (&quot;OMIB_Gen&quot;, :δ))</code>: can be used to obtain the solution as a tuple of time and the required state. In this case, we are obtaining the rotor angle <code>:δ</code> of the generator named <code>&quot;OMIB_Gen&quot;</code>.</li><li><code>get_voltagemag_series(sim, 2)</code>: can be used to obtain the voltage magnitude as a tuple of time and voltage. In this case, we are obtaining the voltage magnitude at bus 2 (where the generator is located).</li></ul><pre><code class="language-julia">using Plots
-angle = get_state_series(sim, (&quot;OMIB_Gen&quot;, :δ))
+                dtmax=0.02); #Arguments: Maximum timestep allowed</code></pre><p>In some cases, the dynamic time step used for the simulation may fail. In such case, the keyword argument <code>dtmax</code> can be used to limit the maximum time step allowed for the simulation.</p><h2 id="Step-5:-Exploring-the-solution-1"><a class="docs-heading-anchor" href="#Step-5:-Exploring-the-solution-1">Step 5: Exploring the solution</a><a class="docs-heading-anchor-permalink" href="#Step-5:-Exploring-the-solution-1" title="Permalink"></a></h2><p>After running the simulation, our simulation structure <code>sim</code> will have the solution. For that <code>sim.solution</code> can be used to explore the solution structure. In this case <code>sim.solution.t</code> returns the vector of time, while <code>sim.solution.u</code> return the array of states. In addition, <code>LITS</code> have two functions to obtain different states of the solution:</p><ul><li><code>get_state_series(sim, (&quot;generator-102-1&quot;, :δ))</code>: can be used to obtain the solution as a tuple of time and the required state. In this case, we are obtaining the rotor angle <code>:δ</code> of the generator named <code>&quot;OMIB_Gen&quot;</code>.</li><li><code>get_voltagemag_series(sim, 102)</code>: can be used to obtain the voltage magnitude as a tuple of time and voltage. In this case, we are obtaining the voltage magnitude at bus 102 (where the generator is located).</li></ul><pre><code class="language-julia">using Plots
+angle = get_state_series(sim, (&quot;generator-102-1&quot;, :δ))
 plot(angle, xlabel=&quot;time&quot;, ylabel=&quot;rotor angle [rad]&quot;, label=&quot;rotor angle&quot;)
 
-volt = get_voltagemag_series(sim, 2)
-plot(volt, xlabel=&quot;time&quot;, ylabel=&quot;Voltage [pu]&quot;, label=&quot;V_2&quot;)</code></pre><img src="../../assets/rotor_angle_OMIB.png" width="75%"/><p>⠀</p><img src="../../assets/voltage_OMIB.png" width="75%"/><p>⠀</p><h2 id="Optional:-Small-Signal-Analysis-1"><a class="docs-heading-anchor" href="#Optional:-Small-Signal-Analysis-1">Optional: Small Signal Analysis</a><a class="docs-heading-anchor-permalink" href="#Optional:-Small-Signal-Analysis-1" title="Permalink"></a></h2><p><code>LITS 0.3.0</code> uses automatic differentiation to compute the reduced Jacobian of the system for the differential states. This can be used to analyze the local stability of the linearized system.</p><pre><code class="language-julia">small_sig = small_signal_analysis(sim)</code></pre><p>The <code>small_sig</code> result can report the reduced jacobian for <span>$\delta$</span> and <span>$\omega$</span>, and can also be used to report the eigenvalues of the reduced linearized system.</p><pre><code class="language-julia">small_sig.reduced_jacobian
+volt = get_voltagemag_series(sim, 102)
+plot(volt, xlabel=&quot;time&quot;, ylabel=&quot;Voltage [pu]&quot;, label=&quot;V_2&quot;)</code></pre><img src="../../assets/rotor_angle_OMIB.png" width="75%"/><p>⠀</p><img src="../../assets/voltage_OMIB.png" width="75%"/><p>⠀</p><h2 id="Optional:-Small-Signal-Analysis-1"><a class="docs-heading-anchor" href="#Optional:-Small-Signal-Analysis-1">Optional: Small Signal Analysis</a><a class="docs-heading-anchor-permalink" href="#Optional:-Small-Signal-Analysis-1" title="Permalink"></a></h2><p><code>LITS 0.4.0</code> uses automatic differentiation to compute the reduced Jacobian of the system for the differential states. This can be used to analyze the local stability of the linearized system.</p><pre><code class="language-julia">small_sig = small_signal_analysis(sim)</code></pre><p>The <code>small_sig</code> result can report the reduced jacobian for <span>$\delta$</span> and <span>$\omega$</span>, and can also be used to report the eigenvalues of the reduced linearized system.</p><pre><code class="language-julia">small_sig.reduced_jacobian
 
-small_sig.eigenvalues</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../">« Home</a><a class="docs-footer-nextpage" href="../example_lines/">Tutorial 2: Dynamic Lines »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 1 May 2020 18:11">Friday 1 May 2020</span>. Using Julia version 1.3.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+small_sig.eigenvalues</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example_data/">« Tutorial 0: Data Creation</a><a class="docs-footer-nextpage" href="../example_lines/">Tutorial 2: Dynamic Lines »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Tuesday 14 July 2020 18:53">Tuesday 14 July 2020</span>. Using Julia version 1.3.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
