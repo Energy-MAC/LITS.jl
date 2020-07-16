@@ -6,13 +6,12 @@ Low Inertia Transient Simulation Toolbox for Power Systems
 ![Documentation Build](https://github.com/Energy-MAC/LITS.jl/workflows/Documentation/badge.svg)
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://energy-mac.github.io/LITS.jl/latest)
 
+# Note to users.
 
-To install and develop run the following:
+LITS v0.4 is the last release for this package and will be deprecated. The modeling capabilities and new features will be added
+in [PowerSimulationsDynamic](https://github.com/NREL-SIIP/PowerSimulationsDynamic.jl) to provide long-term support
+under [NREL's SIIP Iniciative](https://github.com/NREL-SIIP)
 
-```Julia
-julia> ] add LITS
-```
-
-The use examples can be found in the [LITS-Examples](https://github.com/Energy-MAC/LITS-Examples) repository.
+Old examples up to version v0.4 can be found in the [LITS-Examples](https://github.com/Energy-MAC/LITS-Examples)  repository. Newer versions using [PowerSimulationsDynamic](https://github.com/NREL-SIIP/PowerSimulationsDynamic.jl) can be found in [SIIP-Examples](https://github.com/NREL-SIIP/SIIPExamples.jl)
 
 The pre-print paper can be found in our [arXiv preprint](https://arxiv.org/abs/2003.02957).
