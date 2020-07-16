@@ -8,7 +8,7 @@ Low Inertia Transient Simulation Toolbox for Power Systems
 
 # Note to users.
 
-LITS v0.4 is the last release for this package. The modeling capabilities and new features will be added
+LITS v0.4 is the last release for this package and will be deprecated. The modeling capabilities and new features will be added
 in [PowerSimulationsDynamic](https://github.com/NREL-SIIP/PowerSimulationsDynamic.jl) to provide long-term support
 under [NREL's SIIP Iniciative](https://github.com/NREL-SIIP)
 
